@@ -3,71 +3,87 @@ package cuslog
 import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"log"
 	"sync"
+	"time"
 )
 
-var std = New() //创建全局默认的logger
+//两种创建方式 一种是New defaultOptions 另一种是 Init(&Options实例)
+var (
+	std = New(defaultOptions())
+	mu  sync.Mutex
+)
 
 type logger struct {
-	opt *options
-	log   *zap.SugaredLogger
-	mu sync.Mutex
+	zapLogger *zap.Logger
 }
 
-func New(opts ...OptionFunc) *logger {
-	//初始化选项
-	opt := initOptions(opts...)
+func Init(opts *Options) {
+	mu.Lock()
+	defer mu.Unlock()
+	std = New(opts)
+}
 
-	//日志将写到哪里去
-	writeSyncer := zapcore.AddSync(opt.output) // file, _ := os.Create("./test.log")
+func New(opts *Options) *logger {
+	if opts == nil {
+		opts = defaultOptions()
+	}
 
-	//如何写入日志 JSON || TEXT
-	encoder := getJsonEncoder(opt)
-
-	// core 的三个配置：编码器 写入文件地址 日志级别
-	core := zapcore.NewCore(encoder, writeSyncer, opt.level)
-
-	//将调用方栈信息记录下来
-	zapLog := zap.New(core,zap.AddCaller())
+	loggerConfig := InitZapConfig(opts)
+	var err error
+	l, err := loggerConfig.Build(zap.AddStacktrace(zapcore.PanicLevel),
+		zap.AddCallerSkip(1))
+	if err != nil {
+		panic(err)
+	}
 
 	//实例化全局logger
 	logger := &logger{
-		opt: opt,
-		log: zapLog.Sugar(),
+		zapLogger: l,
 	}
 	return logger
 }
 
-// getJsonEncoder 设置 编码器的信息
-func getJsonEncoder(opts *options) zapcore.Encoder {
-	config := NewEncoderConfig()
-	config.EncodeTime = zapcore.ISO8601TimeEncoder //修改时间编码器
-	config.EncodeLevel = zapcore.CapitalLevelEncoder //在日志文件中使用大写字母记录日志级别
-	if opts.formatter == EncodeJson {
-		return zapcore.NewJSONEncoder(config)
-	}else if  opts.formatter == EncodeText {
-		return zapcore.NewConsoleEncoder(config)
-	}else {
-		log.Fatalf("options.formatter is only json or text")
-		return nil
+//InitZapConfig 类似于zap的NewProduction NewDevelopment方法
+func InitZapConfig(opts *Options) *zap.Config {
+	//将字符串level转化为zap level ，使用zap提供的转换方法
+	var zapLevel zapcore.Level
+	if err := zapLevel.UnmarshalText([]byte(opts.Level)); err != nil {
+		zapLevel = zapcore.InfoLevel
+	}
+	return &zap.Config{
+		Level:             zap.NewAtomicLevelAt(zapLevel),
+		Development:       opts.Development,
+		DisableCaller:     opts.DisableCaller,
+		DisableStacktrace: opts.DisableStacktrace,
+		// 采样设置，记录全局的CPU、IO负载 hook
+		Sampling: &zap.SamplingConfig{
+			Initial:    100,
+			Thereafter: 100,
+			Hook:       opts.Hook,
+		},
+		// 支持编码json或者console 咱以后扩展
+		Encoding:         opts.Formatter,
+		EncoderConfig:    NewEncoderConfig(opts),
+		OutputPaths:      opts.OutputPaths,
+		ErrorOutputPaths: opts.ErrorOutputPaths,
+		// 可以额外添加的参数
+		InitialFields: opts.InitialFields,
 	}
 }
 
-// NewEncoderConfig 设置默认输出文字的规格
-func NewEncoderConfig() zapcore.EncoderConfig {
-	return zapcore.EncoderConfig{
-		TimeKey:        "time",
-		LevelKey:       "level",
-		NameKey:        "logger",
-		CallerKey:      "caller",
-		FunctionKey:    zapcore.OmitKey,
-		MessageKey:     "msg",
-		StacktraceKey:  "stacktrace",
-		LineEnding:     zapcore.DefaultLineEnding,
-		EncodeLevel:    zapcore.LowercaseLevelEncoder,
-		EncodeTime:     zapcore.EpochTimeEncoder,
-		EncodeDuration: zapcore.SecondsDurationEncoder,
-		EncodeCaller:   zapcore.ShortCallerEncoder,
-	}
+//格式化 EncoderConfig中的字段
+func timeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+	enc.AppendString(t.Format("2006-01-02 15:04:05.000"))
+}
+
+//格式化 EncoderConfig中的字段
+func milliSecondsDurationEncoder(d time.Duration, enc zapcore.PrimitiveArrayEncoder) {
+	enc.AppendFloat64(float64(d) / float64(time.Millisecond))
+}
+
+// Flush zap 的 Sync()
+func Flush() { std.Flush() }
+
+func (l *logger) Flush() {
+	_ = l.zapLogger.Sync()
 }
