@@ -40,7 +40,7 @@ func defaultOptions() *Options {
 	}
 }
 
-// NewEncoderConfig 设置默认输出文字的规格 暂不支持直接传入Config
+// NewEncoderConfig 设置默认输出文字的规格 暂不支持直接传入EncoderConfig
 func NewEncoderConfig(opts *Options) zapcore.EncoderConfig {
 	encodeLevel := zapcore.CapitalLevelEncoder
 

@@ -43,6 +43,27 @@ func New(opts *Options) *logger {
 	return logger
 }
 
+func New2(opts *Options) *logger {
+	if opts == nil {
+		opts = defaultOptions()
+	}
+
+	encoder := zapcore.NewConsoleEncoder(NewEncoderConfig(opts))
+
+	var Cores []zapcore.Core
+	Cores = append(Cores, zapcore.NewCore(encoder, getLogWriter("infolog"), zap.InfoLevel))
+	Cores = append(Cores, zapcore.NewCore(encoder, getLogWriter("warnlog"), zap.WarnLevel))
+	core := zapcore.NewTee(Cores...)
+
+	Logger := zap.New(core, zap.AddCaller())
+
+	//实例化全局logger
+	logger := &logger{
+		zapLogger: Logger,
+	}
+	return logger
+}
+
 //InitZapConfig 类似于zap的NewProduction NewDevelopment方法
 func InitZapConfig(opts *Options) *zap.Config {
 	//将字符串level转化为zap level ，使用zap提供的转换方法
