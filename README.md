@@ -12,7 +12,7 @@
    - [x] 结构化打印 方便Filebeat、Logstash Shipper等工具记录 ：借助zap的Logger 超高性能避免反射
    - [x] zap的hook功能
    - [ ] 日志投递：投递到 Elasticsearch、Kafka 等组件
-   - [ ] zap动态开关日志级别：无需重启服务，通过请求改变日志级别
+   - [x] zap动态开关日志级别：无需重启服务，通过http请求等方式改变日志级别(见example/senior示例)
 
 ### Usage
 ```go

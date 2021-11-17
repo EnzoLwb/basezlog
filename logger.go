@@ -28,6 +28,10 @@ func New(opts *Options) *logger {
 		opts = defaultOptions()
 	}
 
+	if len(opts.OutputPaths) == 0 {
+		opts.OutputPaths = []string{"stdout"}
+	}
+
 	loggerConfig := InitZapConfig(opts)
 	var err error
 	l, err := loggerConfig.Build(zap.AddStacktrace(zapcore.PanicLevel),
@@ -66,13 +70,16 @@ func New2(opts *Options) *logger {
 
 //InitZapConfig 类似于zap的NewProduction NewDevelopment方法
 func InitZapConfig(opts *Options) *zap.Config {
-	//将字符串level转化为zap level ，使用zap提供的转换方法
-	var zapLevel zapcore.Level
-	if err := zapLevel.UnmarshalText([]byte(opts.Level)); err != nil {
-		zapLevel = zapcore.InfoLevel
+	//将字符串level转化为zap level ，使用zap提供的转换方法;若提供了AtomicLevel 则不需转换
+	if opts.AtomicLevel == (zap.AtomicLevel{}) {
+		var zapLevel zapcore.Level
+		if err := zapLevel.UnmarshalText([]byte(opts.Level)); err != nil {
+			zapLevel = zapcore.InfoLevel
+		}
+		opts.AtomicLevel = zap.NewAtomicLevelAt(zapLevel)
 	}
 	return &zap.Config{
-		Level:             zap.NewAtomicLevelAt(zapLevel),
+		Level:             opts.AtomicLevel,
 		Development:       opts.Development,
 		DisableCaller:     opts.DisableCaller,
 		DisableStacktrace: opts.DisableStacktrace,

@@ -1,6 +1,7 @@
 package cuslog
 
 import (
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -11,9 +12,10 @@ import (
 */
 type Options struct {
 	OutputPaths       []string
-	ErrorOutputPaths  []string //错误输出路径 console 或者文件地址
-	Level             string   //需要记录的级别
-	Formatter         string   //encode json||text
+	ErrorOutputPaths  []string        //错误输出路径 console 或者文件地址
+	Level             string          //需要记录的级别
+	AtomicLevel       zap.AtomicLevel //可以直接设置zap的level方便扩展
+	Formatter         string          //encode json||text
 	DisableCaller     bool
 	DisableStacktrace bool
 	Development       bool //是否为开发模式 开发模式不打印debug级别
@@ -30,6 +32,7 @@ type OptionFunc func(*Options)
 func defaultOptions() *Options {
 	return &Options{
 		Level:             zapcore.InfoLevel.String(),
+		AtomicLevel:       zap.AtomicLevel{},
 		DisableCaller:     false,
 		DisableStacktrace: false,
 		Formatter:         "console",
