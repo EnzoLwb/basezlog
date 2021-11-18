@@ -45,3 +45,4 @@ example中的第三方(rabbitmq,redis,file-rotatelogs等内容 会从 go.mod 中
 > 
 > 也可以当做是zap的学习记录吧 :blush: 之后我会把笔记放到里面
 
+Star！！ 求Star！
