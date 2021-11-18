@@ -20,7 +20,6 @@ type Options struct {
 	DisableStacktrace bool
 	Development       bool //是否为开发模式 开发模式不打印debug级别
 	Name              string
-	maxAge            int //日志保留天数
 	EnableColor       bool
 	InitialFields     map[string]interface{} //全局log的额外参数在根对象下 例如 {cluster:"cluster_1"}
 	Hook              func(zapcore.Entry, zapcore.SamplingDecision)

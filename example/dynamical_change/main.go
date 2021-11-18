@@ -58,7 +58,6 @@ func main() {
 	}()
 
 	for i := 0; i < 10; i++ {
-
 		log.Debug("This is a debug message")
 		log.Info("This is a info message",
 			log.Int32("int_key", 10),

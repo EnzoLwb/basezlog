@@ -47,16 +47,9 @@ func New(opts *Options) *logger {
 	return logger
 }
 
-func New2(opts *Options) *logger {
-	if opts == nil {
-		opts = defaultOptions()
-	}
-
-	encoder := zapcore.NewConsoleEncoder(NewEncoderConfig(opts))
-
-	var Cores []zapcore.Core
-	Cores = append(Cores, zapcore.NewCore(encoder, getLogWriter("infolog"), zap.InfoLevel))
-	Cores = append(Cores, zapcore.NewCore(encoder, getLogWriter("warnlog"), zap.WarnLevel))
+func NewByCores(Cores []zapcore.Core) {
+	mu.Lock()
+	defer mu.Unlock()
 	core := zapcore.NewTee(Cores...)
 
 	Logger := zap.New(core, zap.AddCaller())
@@ -65,7 +58,14 @@ func New2(opts *Options) *logger {
 	logger := &logger{
 		zapLogger: Logger,
 	}
-	return logger
+	std = logger
+}
+
+func appendCore(
+	encoder zapcore.Encoder,
+	writer zapcore.WriteSyncer,
+	level zapcore.Level) zapcore.Core {
+	return zapcore.NewCore(encoder, writer, level)
 }
 
 //InitZapConfig 类似于zap的NewProduction NewDevelopment方法
