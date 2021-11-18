@@ -25,17 +25,17 @@ func main()  {
    log.Errorw("Message printed with Errorw", "X-Request-ID", "fbf54504-64da-4088-9b86-67824a7fb508")
 
     // logger配置 可有可无
-	opts := &log.Options{
-		Level:            "debug",
-		Formatter:        "json",
-		EnableColor:      false,
-		DisableCaller:    true,
-		OutputPaths:      []string{"test.log", "stdout"},
-	}
-
-	// 初始化全局logger后再使用也可
-	log.Init(opts)
-	defer log.Flush()
+    opts := &log.Options{
+        Level:            "debug",
+        Formatter:        "json",
+        EnableColor:      false,
+        DisableCaller:    true,
+        OutputPaths:      []string{"test.log", "stdout"},
+    }
+   
+    // 初始化全局logger后再使用也可
+    log.Init(opts)
+    defer log.Flush()
 }
 ```
 #### 更多功能介绍请查看example
@@ -43,5 +43,5 @@ example中的第三方(rabbitmq,redis,file-rotatelogs等内容 会从 go.mod 中
 #### 作者说
 > 其实写到后来发现还是离不开zapcore，也不由感叹zap的设计和易用性，zap一生推！
 > 
-> 也可以当做是zap的学习笔记吧 :blush: 之后我会把学习笔记放到里面
+> 也可以当做是zap的学习记录吧 :blush: 之后我会把笔记放到里面
 
