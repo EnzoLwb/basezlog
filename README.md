@@ -1,4 +1,4 @@
-##### `EnzoLwb/cuslog` 是个开箱即用日志包，基于 zap 包封装。具有如下特性：
+##### `EnzoLwb/basezlog` 是个开箱即用日志包，基于 zap 包封装。具有如下特性：
  - 基本功能
    - [x] 能够将事件记录到文件中，而不是应用程序控制台
    - [x] 日志切割：（依赖file-rotatelogs ）
@@ -45,4 +45,4 @@ example中的第三方(rabbitmq,redis,file-rotatelogs等内容 会从 go.mod 中
 > 
 > 也可以当做是zap的学习记录吧 :blush: 之后我会把笔记放到里面
 
-Star！！ 求Star！
+### Star！！ 求Star！
