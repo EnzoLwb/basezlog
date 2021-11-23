@@ -1,4 +1,4 @@
-module github.com/EnzoLwb/cuslog
+module github.com/EnzoLwb/basezlog
 
 go 1.15
 
