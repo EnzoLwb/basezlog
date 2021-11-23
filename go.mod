@@ -1,4 +1,4 @@
-module github.com/EnzoLwb/basezlog
+module github.com/EnzoLwb/log
 
 go 1.15
 
